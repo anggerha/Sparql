@@ -197,7 +197,85 @@ async function runQueryBatik() {
 
 }
 
+
+async function runQueryKerajinan() {
+    var data = new Array();
+    const bindingsStream = await myEngine.queryBindings(`
+    PREFIX owl: <http://www.w3.org/2002/07/owl#>
+    PREFIX kerajinan: <http://alunalun.info/ontology/kerajinan#>
+    PREFIX schema: <http://schema.org/>
+    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+    PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+    SELECT ?s ?n ?g ?category
+
+    WHERE{
+    {
+        ?s rdf:type owl:NamedIndividual .
+        ?s rdf:type kerajinan:KerajinanKayu .
+    BIND('Kerajinan Kayu' as ?category) .
+        ?s rdfs:label ?n .
+    OPTIONAL{?s schema:image ?g .}
+    }UNION {
+        ?s rdf:type owl:NamedIndividual .
+        ?s rdf:type kerajinan:Anyaman .
+    BIND('Anyaman' as ?category) .
+        ?s rdfs:label ?n .
+    OPTIONAL{?s schema:image ?g .}
+    }
+    } `, {
+        sources: [{
+            value: 'https://app.alunalun.info/fuseki/kerajinantradisional#',
+        }],
+        });
+
+    bindingsStream.on('data', (binding) => {
+        //console.log(binding.toString()); // Quick way to print bindings for testing
+
+        // console.log(binding.has('s')); // Will be true
+        // console.log(binding.has('c'));
+        
+        // Obtaining values
+        // console.log('Label: ' + binding.get('n').value);
+        // console.log('s: ' + binding.get('s').value);
+        // console.log('c: ' + binding.get('c').value);
+        // console.log('Category: ' + binding.get('category').value);
+        
+        // if(binding.has('img')){
+        //     console.log('Gambar: ' + binding.get('img').value);
+        // }
+        // if(binding.has('d')){
+        //     console.log('d: ' + binding.get('d').value)
+        // }
+        
+        data.push(JSON.parse(binding.toString()));
+        
+        
+        //console.log(binding);
+        // console.log(binding.get('g').value);
+        // console.log(binding.get('s').termType);
+    });
+
+    bindingsStream.on('end', () => {
+        
+    data.forEach((element) => {
+        console.log(element);
+    });
+    
+        // The data-listener will not be called anymore once we get here.
+    });
+
+    bindingsStream.on('error', (error) => {
+        console.error(error);
+    });
+}
+
+
+
+
+
 // runQueryCandi()
 // runQueryAlatMusik()
-runQueryBatik()
+//runQueryBatik()
+runQueryKerajinan()
 
